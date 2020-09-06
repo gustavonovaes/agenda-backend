@@ -1,0 +1,32 @@
+version: "3"
+
+services:
+  php:
+    build: .
+    volumes:
+      - .:/app
+    working_dir: /app
+    ports:
+      - 80:80
+    command: php artisan serve --host 0.0.0.0 --port 80
+
+  composer:
+    image: composer:2
+    volumes:
+      - .:/app
+    working_dir: /app
+    environment:
+      COMPOSER_CACHE_DIR: /app/.cache/composer/
+
+  mysql:
+    image: mysql:latest
+    ports:
+      - 3306:3306
+    volumes:
+      - ./storage/dbdata:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_ROOT_PASSWORD: hardpass
+
+  redis:
+    image: redis:alpine
