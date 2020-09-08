@@ -18,10 +18,10 @@ class CreateAtividadesTable extends Migration
             $table->string('titulo');
             $table->text('descricao')->nullable();
             $table->string('tipo');
-            $table->timestamp('data_inicio');
-            $table->timestamp('data_prazo')->nullable();
+            $table->date('data_inicio');
+            $table->date('data_prazo')->nullable();
             $table->enum('status', ['aberta', 'concluida']);
-            $table->timestamp('data_conclusao')->nullable();
+            $table->date('data_conclusao')->nullable();
             $table->unsignedBigInteger('user_id')->comment('responsavel');
             $table->timestamps();
         });
