@@ -11,6 +11,7 @@ use App\Http\Resources\AtividadeResource;
 use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Redis;
 
 class AtividadeController extends Controller
 {
@@ -116,5 +117,32 @@ class AtividadeController extends Controller
         ]);
 
         return \response(new AtividadeResource($atividade), Response::HTTP_OK);
+    }
+
+    /**
+     * Retorna tipos usados nas atividades
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getTipos(): Response
+    {
+        $redisKey = 'atividades.tipos';
+        $cacheTimeout = 60;
+
+        if (Redis::exists($redisKey)) {
+            $tiposJson = Redis::get($redisKey);
+            $tipos = \json_decode($tiposJson);
+        } else {
+            $tipos = Atividade::all('tipo')
+                ->map(fn ($atividade) => $atividade->tipo)
+                ->unique()
+                ->toArray();
+
+            $tiposJson = \json_encode($tipos);
+
+            Redis::set($redisKey, $tiposJson, 'EX', $cacheTimeout);
+        }
+
+        return \response($tipos, Response::HTTP_OK);
     }
 }

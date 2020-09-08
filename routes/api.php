@@ -19,3 +19,5 @@ Route::resource('atividades', AtividadeController::class)->only([
 ]);
 
 Route::patch('atividades/{atividade}/concluir', 'AtividadeController@conclui');
+
+Route::get('atividades/tipos', 'AtividadeController@getTipos');
