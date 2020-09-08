@@ -11,6 +11,7 @@ use App\Http\Requests\UpdateAtividadeRequest;
 use App\Http\Resources\AtividadeResource;
 use App\User;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Redis;
@@ -23,11 +24,17 @@ class AtividadeController extends Controller
      *
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
-    public function index(): AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
-        $atividades = Atividade::orderBy('created_at', 'desc')->paginate(10);
+        $atividades = Atividade::orderBy('created_at', 'desc');
 
-        return AtividadeResource::collection($atividades);
+        if ($request->data_inicio && $request->data_fim) {
+            $atividades->whereBetween('data_inicio', [$request->data_inicio, $request->data_fim]);
+        } else if ($request->data_inicio) {
+            $atividades->where('data_inicio', '>=', $request->data_inicio);
+        }
+
+        return AtividadeResource::collection($atividades->paginate(10));
     }
 
     /**
