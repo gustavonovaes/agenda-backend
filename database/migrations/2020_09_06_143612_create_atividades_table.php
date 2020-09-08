@@ -16,10 +16,10 @@ class CreateAtividadesTable extends Migration
         Schema::create('atividades', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('titulo');
-            $table->text('descricao');
+            $table->text('descricao')->nullable();
             $table->string('tipo');
             $table->timestamp('data_inicio');
-            $table->timestamp('data_prazo');
+            $table->timestamp('data_prazo')->nullable();
             $table->timestamp('data_conclusao')->nullable();
             $table->unsignedBigInteger('user_id')->comment('responsavel');
             $table->timestamps();
