@@ -3,15 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Atividade;
+use App\Http\Requests\AtividadeRequest;
 use App\Http\Requests\ConcluiAtividadeRequest;
 use App\Http\Requests\RemoveAtividadeRequest;
 use App\Http\Requests\StoreAtividadeRequest;
 use App\Http\Requests\UpdateAtividadeRequest;
 use App\Http\Resources\AtividadeResource;
+use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Validation\ValidationException;
 
 class AtividadeController extends Controller
 {
@@ -35,7 +38,7 @@ class AtividadeController extends Controller
      */
     public function store(StoreAtividadeRequest $request): Response
     {
-        // TODO: Validar intersecção de datas entre atividades
+        $this->checaSobreposicaoDatasAtividadesPendentes($request);
 
         $dataInicio = Carbon::parse($request->data_inicio)->format('Y-m-d');
         $dataPrazo = $request->data_prazo ? Carbon::parse($request->data_prazo)->format('Y-m-d') : null;
@@ -65,7 +68,7 @@ class AtividadeController extends Controller
      */
     public function update(UpdateAtividadeRequest $request, Atividade $atividade): Response
     {
-        // TODO: Validar intersecção de datas entre atividades
+        $this->checaSobreposicaoDatasAtividadesPendentes($request);
 
         $dataInicio = Carbon::parse($request->data_inicio)->format('Y-m-d');
         $dataPrazo = $request->data_prazo ? Carbon::parse($request->data_prazo)->format('Y-m-d') : null;
@@ -144,5 +147,31 @@ class AtividadeController extends Controller
         }
 
         return \response($tipos, Response::HTTP_OK);
+    }
+
+    /**
+     * Verifica se data_inicio ou data_prazo sobrepõe a data de alguma outra atividade pendente do usuário responsável.
+     *
+     * @param \App\Http\Requests\AtividadeRequest $request
+     *
+     * @throws Illuminate\Validation\ValidationException Quando existem atividades pendentes para data_inicio ou data_prazo
+     *
+     * @return void
+     */
+    private function checaSobreposicaoDatasAtividadesPendentes(AtividadeRequest $request): void
+    {
+        $user = User::findOrFail($request->user_id);
+
+        $atividades = $user->atividadesPendentesInterseccaoDatas($request->data_inicio, $request->data_prazo);
+
+        $outrasAtividades = $atividades->filter(fn ($atividade) => $atividade->id !== $request->id);
+        if ($outrasAtividades->isEmpty()) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'atividades_interseccao' => $outrasAtividades->pluck('titulo', 'id'),
+            'usuario' => $user->name,
+        ]);
     }
 }

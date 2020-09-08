@@ -40,4 +40,21 @@ class User extends Authenticatable
     {
         return $this->hasMany(Atividade::class);
     }
+
+    public function atividadesPendentesInterseccaoDatas(string $dataInicio, ?string $dataPrazo)
+    {
+        if (\is_null($dataPrazo)) {
+            $dataPrazo = $dataInicio;
+        }
+
+        return $this->atividades()
+            ->where('status', Atividade::STATUS_ABERTA)
+            ->whereRaw("(
+                '{$dataInicio}' between data_inicio and ifnull(data_prazo,data_inicio)
+                or data_inicio between '{$dataInicio}' and '{$dataPrazo}'
+                or ifnull(data_prazo,data_inicio) between '{$dataInicio}' and '{$dataPrazo}'
+            )")
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
 }
