@@ -11,16 +11,24 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-        $user = factory(App\User::class)->create([
+        $user1 = factory(App\User::class)->create([
             'name' => 'Osvaldo',
             'email' => 'osvaldo@odig.net',
             'password' => '$2y$10$ZgjkabLJkjVyqwaCu85ePueIG218mbFGUrQdXuAglxy7.trjsMPpq', // piperun
         ]);
 
-        foreach (range(3, 5) as $_) {
-            factory(App\Atividade::class)->create([
-                'user_id' => $user->id
-            ]);
-        }
+        factory(App\Atividade::class, 10)->create([
+            'user_id' => $user1->id
+        ]);
+
+        $user2 = factory(App\User::class)->create([
+            'name' => 'Gustavo',
+            'email' => 'gustavonovaes.dev@gmail.com',
+            'password' => '$2y$10$ZgjkabLJkjVyqwaCu85ePueIG218mbFGUrQdXuAglxy7.trjsMPpq', // piperun
+        ]);
+
+        factory(App\Atividade::class, 10)->create([
+            'user_id' => $user2->id
+        ]);
     }
 }
