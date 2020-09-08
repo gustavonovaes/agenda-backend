@@ -13,12 +13,16 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/usuarios', 'UserController@index');
+Route::post('/login', 'AuthController@login')->name('login');
 
-Route::resource('atividades', AtividadeController::class)->only([
-    'index', 'store', 'update', 'destroy'
-]);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', 'AuthController@logout');
 
-Route::patch('atividades/{atividade}/concluir', 'AtividadeController@conclui');
+    Route::get('/usuarios', 'UserController@index');
 
-Route::get('atividades/tipos', 'AtividadeController@getTipos');
+    Route::resource('atividades', AtividadeController::class)->only([
+        'index', 'store', 'update', 'destroy'
+    ]);
+    Route::patch('atividades/{atividade}/concluir', 'AtividadeController@conclui');
+    Route::get('atividades/tipos', 'AtividadeController@getTipos');
+});
