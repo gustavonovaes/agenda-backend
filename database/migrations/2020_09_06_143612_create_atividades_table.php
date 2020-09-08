@@ -20,6 +20,7 @@ class CreateAtividadesTable extends Migration
             $table->string('tipo');
             $table->timestamp('data_inicio');
             $table->timestamp('data_prazo')->nullable();
+            $table->enum('status', ['aberta', 'concluida']);
             $table->timestamp('data_conclusao')->nullable();
             $table->unsignedBigInteger('user_id')->comment('responsavel');
             $table->timestamps();

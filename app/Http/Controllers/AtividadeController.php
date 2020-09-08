@@ -8,6 +8,7 @@ use App\Http\Requests\RemoveAtividadeRequest;
 use App\Http\Requests\StoreAtividadeRequest;
 use App\Http\Requests\UpdateAtividadeRequest;
 use App\Http\Resources\AtividadeResource;
+use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 
@@ -35,16 +36,17 @@ class AtividadeController extends Controller
     {
         // TODO: Validar intersecção de datas entre atividades
 
-        // FIXME: $userId = $request->user()->id;
-        $userId = 1;
+        $dataInicio = Carbon::parse($request->data_inicio)->format('Y-m-d');
+        $dataPrazo = $request->data_prazo ? Carbon::parse($request->data_prazo)->format('Y-m-d') : null;
 
         $atividade = Atividade::create([
             'titulo' => $request->titulo,
             'descricao' => $request->descricao,
             'tipo' => $request->tipo,
-            'data_inicio' => $request->data_inicio,
-            'data_prazo' => $request->data_prazo,
-            'user_id' => $userId,
+            'user_id' => $request->user_id,
+            'data_inicio' => $dataInicio,
+            'data_prazo' => $dataPrazo,
+            'status' => $request->status,
         ]);
 
         return \response(
@@ -64,12 +66,22 @@ class AtividadeController extends Controller
     {
         // TODO: Validar intersecção de datas entre atividades
 
+        $dataInicio = Carbon::parse($request->data_inicio)->format('Y-m-d');
+        $dataPrazo = $request->data_prazo ? Carbon::parse($request->data_prazo)->format('Y-m-d') : null;
+
+        $dataConclusao = $request->status === Atividade::STATUS_CONCLUIDA
+            ? \now()
+            : null;
+
         $atividade->update([
             'titulo' => $request->titulo,
             'descricao' => $request->descricao,
             'tipo' => $request->tipo,
-            'data_inicio' => $request->data_inicio,
-            'data_prazo' => $request->data_prazo,
+            'user_id' => $request->user_id,
+            'data_inicio' => $dataInicio,
+            'data_prazo' => $dataPrazo,
+            'status' => $request->status,
+            'data_conclusao' => $dataConclusao,
         ]);
 
         return \response(new AtividadeResource($atividade), Response::HTTP_OK);
@@ -100,6 +112,7 @@ class AtividadeController extends Controller
     {
         $atividade->update([
             'data_conclusao' => \now(),
+            'status' => Atividade::STATUS_CONCLUIDA,
         ]);
 
         return \response(new AtividadeResource($atividade), Response::HTTP_OK);
