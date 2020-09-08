@@ -146,7 +146,7 @@ class AtividadeController extends Controller
             $tipos = Atividade::all('tipo')
                 ->map(fn ($atividade) => $atividade->tipo)
                 ->unique()
-                ->toArray();
+                ->values();
 
             $tiposJson = \json_encode($tipos);
 
